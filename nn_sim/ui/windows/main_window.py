@@ -9,6 +9,7 @@ from ..widgets.property_editor_tree import (
 
 from .model_architecture_widget import ModelArchitectureWidget
 from .graph_view_widget import GraphViewWidget
+from .dataset_widget import DatasetWidget
 
 
 class MainWindow(dc.QMainWindow, PropertyModelListener):
@@ -26,6 +27,9 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
         self.dock_graph = dc.DockWidget(title="Graph View", widget=self.graph_view)
 
         self.arch_edit.on_architecture_changed.connect(self.graph_view.update_graph)
+        
+        self.dataset_widget = DatasetWidget()
+        self.dock_dataset = dc.DockWidget(title="Dataset", widget=self.dataset_widget)
 
         dc.MainWindow(
             widget=self,
@@ -36,8 +40,11 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
             docks=[
                 (dc.Qt.DockWidgetArea.LeftDockWidgetArea, self.dock_arch),
                 (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_graph),
+                (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_dataset),
             ],
         )
+        
+        self.splitDockWidget(self.dock_graph, self.dock_dataset, dc.Qt.Orientation.Horizontal)
 
         self.arch_edit.emit_change()
 

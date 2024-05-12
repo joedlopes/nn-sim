@@ -66,6 +66,18 @@ PARAMS_ARCHITECTURE = {
                     },
                 },
                 {
+                    "id": "arch_output_bias",
+                    "name": "Bias",
+                    "value": True,
+                    "options": {
+                        "type": "boolean",
+                        "can_be_null": False,
+                        "default_value": True,
+                        "boolean_true_text": "Active",
+                        "boolean_false_text": "Disabled",
+                    },
+                },
+                {
                     "id": "arch_n_hidden",
                     "name": "Number of Hidden layers",
                     "value": None,
@@ -199,7 +211,7 @@ class ModelArchitectureWidget(dc.QWidget, PropertyModelListener):
         if prop_id.startswith("arch_n_hidden"):
             self.update_hidden_layers(property_item_model.get_value())
 
-        for key in ["arch", "bias", "n_hidden", "n_outputs", "n_inputs", "n_neurons"]:
+        for key in ["arch", "bias", "n_hidden", "n_outputs", "n_inputs", "n_neurons",]:
             if key in prop_id:
                 self.emit_change()
 

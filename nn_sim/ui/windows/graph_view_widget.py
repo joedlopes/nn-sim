@@ -51,11 +51,29 @@ VERTICAL_DISTANCE = 200
 HORIZONTAL_DISTANCE = 500
 
 NEURON_PEN_WIDTH = 3
-NEURON_PEN_BRUSH = QBrush(QColor(255, 255, 255, 200))
+NEURON_PEN_BRUSH = QBrush(QColor(255, 255, 255, 230))
 WEIGHT_WIDTH = 2
 
 BRUSH_NEURON = QBrush(QColor(0, 0, 200, 255))
+BRUSH_BIAS = QBrush(QColor(200, 200, 0, 255))
 BRUSH_WEIGHT = QBrush(QColor(0, 255, 0, 255))
+
+
+def create_circle(x: float, y: float, size: float,
+                  brush: QBrush, pen: QPen, z_value: int = 10,
+                  ) -> QGraphicsEllipseItem:
+    circle = QGraphicsEllipseItem(x, y, size, size)
+    circle.setBrush(brush)
+    circle.setPen(pen)
+    circle.setZValue(z_value)
+    return circle
+
+
+def create_line(x1, y1, x2, y2, pen, z_value: int = 9) -> QGraphicsLineItem:
+    line = QGraphicsLineItem(x1, y1, x2, y2)
+    line.setPen(pen)
+    line.setZValue(z_value)
+    return line
 
 
 class GraphViewWidget(QGraphicsView):
@@ -67,92 +85,95 @@ class GraphViewWidget(QGraphicsView):
         format.setSamples(16)
         QSurfaceFormat.setDefaultFormat(format)
 
-        # self.setRenderHint(QPainter.Antialiasing)
         self.setDragMode(QGraphicsView.NoDrag)
         self._isPanning = False
         self._panStartX = 0
         self._panStartY = 0
         self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
-        # self.setViewport(QOpenGLWidget())
 
         self._scene = QGraphicsScene(self)
         self.setScene(self._scene)
         self._scene.setBackgroundBrush(QBrush(QColor(0, 0, 0, 255)))
 
-        pen = QPen(Qt.white)
-        pen.setWidth(3)
-        pen.setBrush(QBrush(QColor(255, 255, 255, 255)))
-
-        circle1 = QGraphicsEllipseItem(0, 0, NEURON_SIZE, NEURON_SIZE)
-        circle1.setBrush(QBrush(QColor(0, 0, 255, 100)))
-        circle1.setPen(pen)
-        self._scene.addItem(circle1)
-
-        circle2 = QGraphicsEllipseItem(300, 0, NEURON_SIZE, NEURON_SIZE)
-        circle2.setBrush(QBrush(QColor(0, 0, 255, 100)))
-        circle2.setPen(pen)
-        self._scene.addItem(circle2)
-
         self._neurons = []
+        self._biases = []
         self._weights = []
 
     def update_graph(self, model_info: dict) -> None:
         self._neurons.clear()
         self._weights.clear()
+        self._biases.clear()
         self._scene.clear()
 
         n_inputs = model_info["arch_n_inputs"]
         n_outputs = model_info["arch_n_outputs"]
         n_hidden = model_info["arch_n_hidden"]
         layers = [n_inputs]
+        biases = []
         for idx in range(n_hidden):
             layers.append(model_info["hidden_layers"][f"layer_n_neurons_{idx:04d}"])
-        layers += [n_outputs]
+            biases.append(model_info["hidden_layers"][f"layer_bias_{idx:04d}"])
+        layers.append(n_outputs)
+        biases.append(model_info["arch_output_bias"])
 
         pen = QPen(Qt.white)
         pen.setWidth(NEURON_PEN_WIDTH)
-        pen.setBrush(QBrush(QColor(255, 255, 255, 255)))
+        pen.setBrush(NEURON_PEN_BRUSH)
 
         x = 0
+        idx_layer = 0
         for n_neurons in layers:
             layer_neurons = list()
             self._neurons.append(layer_neurons)
             y = -n_neurons * VERTICAL_DISTANCE / 2.0
+
             for _ in range(n_neurons):
-                circle = QGraphicsEllipseItem(x, y, NEURON_SIZE, NEURON_SIZE)
-                circle.setBrush(BRUSH_NEURON)
-                circle.setPen(pen)
-                circle.setZValue(10)
+                circle = create_circle(x, y, NEURON_SIZE, BRUSH_NEURON, pen, 10)
                 self._scene.addItem(circle)
                 layer_neurons.append(circle)
                 y += VERTICAL_DISTANCE
+
+            if len(biases) > idx_layer and biases[idx_layer]:
+                circle = create_circle(x+NEURON_SIZE*2, y, NEURON_SIZE, BRUSH_BIAS, pen, 10)
+                self._scene.addItem(circle)
+                self._biases.append(circle)
+            else:
+                self._biases.append(None)
+
             x += HORIZONTAL_DISTANCE
+            idx_layer += 1
 
         pen_weight = QPen(Qt.white)
         pen_weight.setWidth(WEIGHT_WIDTH)
         pen_weight.setBrush(BRUSH_WEIGHT)
 
         for idx_layer in range(len(self._neurons) - 1):
-
             weights = list()
             self._weights.append(weights)
-
             for n1 in self._neurons[idx_layer]:
                 for n2 in self._neurons[idx_layer + 1]:
-
-                    line = QGraphicsLineItem(
+                    line = create_line(
                         n1.rect().center().x(),
                         n1.rect().center().y(),
                         n2.rect().center().x(),
                         n2.rect().center().y(),
+                        pen_weight, 9,
                     )
-
-                    # line = FlowingLineItem(n1.rect().center(), n2.rect().center())
-
-                    line.setPen(pen_weight)
-                    line.setZValue(9)
                     self._scene.addItem(line)
                     weights.append(line)
+
+                if len(biases) > idx_layer and biases[idx_layer] is True:
+                    b = self._biases[idx_layer]
+                    for n2 in self._neurons[idx_layer + 1]:
+                        line = create_line(
+                            b.rect().center().x(),
+                            b.rect().center().y(),
+                            n2.rect().center().x(),
+                            n2.rect().center().y(),
+                            pen_weight, 9,
+                        )
+                        self._scene.addItem(line)
+                        weights.append(line)
 
         rect = self._scene.itemsBoundingRect()
         rect.setLeft(-HORIZONTAL_DISTANCE)
