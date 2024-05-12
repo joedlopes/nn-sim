@@ -1,0 +1,249 @@
+{
+    "property_model": [
+        {
+            "id": "group1",
+            "name": "Group 1",
+            "options": {
+                "group": true
+            },
+            "items": [
+                {
+                    "id": "prop1",
+                    "name": "Name",
+                    "value": "Robson",
+                    "options": {
+                        "type": "text",
+                        "can_be_null": false,
+                        "default_value": "Andre",
+                        "is_array": false,
+                        "array_dimension": null,
+                        "group": false,
+                        "editable": true,
+                        "single": false,
+                        "text_line_editor": true,
+                        "text_min_size": 1,
+                        "text_max_size": 100
+                    }
+                },
+                {
+                    "id": "prop_bool",
+                    "name": "Boolean",
+                    "value": false,
+                    "options": {
+                        "type": "boolean",
+                        "can_be_null": false,
+                        "default_value": true,
+                        "boolean_true_text": "Yes",
+                        "boolean_false_text": "No"
+                    }
+                },
+                {
+                    "id": "prop1232",
+                    "name": "ComboBox",
+                    "value": "Germany",
+                    "options": {
+                        "type": "text",
+                        "can_be_null": false,
+                        "default_value": "Germany",
+                        "combo_box": true,
+                        "combo_box_options": [
+                            "Brazil",
+                            "Germany",
+                            "India",
+                            "USA",
+                            "France",
+                            "England"
+                        ]
+                    }
+                },
+                {
+                    "id": "prop2",
+                    "name": "Country",
+                    "value": null,
+                    "options": {
+                        "type": "text",
+                        "can_be_null": false,
+                        "default_value": [
+                            "Germany"
+                        ],
+                        "check_box": true,
+                        "check_box_options": [
+                            "Brazil",
+                            "Germany",
+                            "India",
+                            "USA",
+                            "France",
+                            "England"
+                        ]
+                    }
+                },
+                {
+                    "id": "prop3",
+                    "name": "Age",
+                    "value": null,
+                    "options": {
+                        "type": "integer",
+                        "can_be_null": false,
+                        "default_value": 100,
+                        "group": false,
+                        "number_spinner_editor": true,
+                        "number_min_value": 0,
+                        "number_max_value": 200,
+                        "number_step_value": 1
+                    }
+                },
+                {
+                    "id": "prop4",
+                    "name": "Age",
+                    "value": null,
+                    "options": {
+                        "type": "integer",
+                        "can_be_null": false,
+                        "default_value": 10,
+                        "group": false,
+                        "number_spinner_editor": true,
+                        "number_min_value": 0,
+                        "number_max_value": 200,
+                        "number_step_value": 1
+                    }
+                },
+                {
+                    "id": "prop5",
+                    "name": "Salary",
+                    "value": null,
+                    "options": {
+                        "type": "real_number",
+                        "can_be_null": false,
+                        "default_value": 750.0,
+                        "group": false,
+                        "number_spinner_editor": true,
+                        "number_min_value": 0.0,
+                        "number_max_value": 1000.5,
+                        "number_step_value": 10.5
+                    }
+                }
+            ]
+        },
+        {
+            "id": "group2",
+            "name": "Group 2",
+            "options": {
+                "group": true
+            },
+            "items": [
+                {
+                    "id": "prop21",
+                    "name": "Name",
+                    "value": "Robson X",
+                    "options": {
+                        "type": "text",
+                        "can_be_null": false,
+                        "default_value": "Andre",
+                        "is_array": false,
+                        "array_dimension": null,
+                        "group": false,
+                        "editable": false,
+                        "single": false,
+                        "text_line_editor": true,
+                        "text_min_size": 1,
+                        "text_max_size": 100
+                    }
+                },
+                {
+                    "id": "prop22",
+                    "name": "Country",
+                    "value": null,
+                    "options": {
+                        "type": "text",
+                        "can_be_null": false,
+                        "default_value": [
+                            "Brazil",
+                            "Germany"
+                        ],
+                        "check_box": true,
+                        "check_box_options": [
+                            "Brazil",
+                            "Germany",
+                            "India",
+                            "USA",
+                            "France",
+                            "England"
+                        ]
+                    }
+                },
+                {
+                    "id": "prop23",
+                    "name": "Age",
+                    "value": null,
+                    "options": {
+                        "type": "integer",
+                        "can_be_null": false,
+                        "default_value": 100,
+                        "group": false,
+                        "number_spinner_editor": true,
+                        "number_min_value": 0,
+                        "number_max_value": 200,
+                        "number_step_value": 1
+                    }
+                },
+                {
+                    "id": "prop24",
+                    "name": "Age",
+                    "value": null,
+                    "options": {
+                        "type": "integer",
+                        "can_be_null": false,
+                        "default_value": 10,
+                        "group": false,
+                        "number_spinner_editor": true,
+                        "number_min_value": 0,
+                        "number_max_value": 200,
+                        "number_step_value": 1
+                    }
+                },
+                {
+                    "id": "prop25",
+                    "name": "Salary",
+                    "value": null,
+                    "options": {
+                        "type": "real_number",
+                        "can_be_null": false,
+                        "default_value": 10.0,
+                        "group": false,
+                        "number_spinner_editor": true,
+                        "number_min_value": 0.0,
+                        "number_max_value": 1000.5,
+                        "number_step_value": 0.1
+                    }
+                },
+                {
+                    "id": "prop245",
+                    "name": "File Open",
+                    "value": null,
+                    "options": {
+                        "type": "text",
+                        "open_file_path_editor": true
+                    }
+                },
+                {
+                    "id": "prop2435",
+                    "name": "File Save",
+                    "value": null,
+                    "options": {
+                        "type": "text",
+                        "save_file_path_editor": true
+                    }
+                },
+                {
+                    "id": "prop24353",
+                    "name": "Open Folder",
+                    "value": null,
+                    "options": {
+                        "type": "text",
+                        "folder_path_editor": true
+                    }
+                }
+            ]
+        }
+    ]
+}
