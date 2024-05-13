@@ -14,13 +14,11 @@ def relu(x: np.ndarray) -> np.ndarray:
 
 
 def relu_derivative(x: np.ndarray) -> np.ndarray:
-    x = np.maximum(0, x)
-    x[x > 0] = 1.0
-    return x
+    return np.where(x > 0, 1, 0)
 
 
 def identity(x: np.ndarray) -> np.ndarray:
-    return x.copy(order='C')
+    return x.copy(order="C")
 
 
 def identity_derivative(x: np.ndarray) -> np.ndarray:
@@ -28,16 +26,20 @@ def identity_derivative(x: np.ndarray) -> np.ndarray:
 
 
 def step(x: np.ndarray) -> np.ndarray:
-    x = x.copy(order='C')
-    x[x <= 0] = 0
-    x[x > 0] = 1
-    return x
+    return np.where(x >= 0, 1, 0)
 
 
 def step_derivative(x: np.ndarray) -> np.ndarray:
-    x = x.copy(order='C')
-    return x
+    return np.zeros_like(x)
 
 
 def softmax(x: np.ndarray) -> np.ndarray:
-    return x
+    e_x = np.exp(x - np.max(x))  # Subtract max for numerical stability
+    return e_x / e_x.sum(axis=0)
+
+
+def softmax_derivative(softmax_output):
+    """Compute the Jacobian matrix of softmax output for each output in the softmax."""
+    # Reshape the 1-d softmax to 2-d so that np.dot will do the matrix multiplication
+    s = softmax_output.reshape(-1, 1)
+    return np.diagflat(s) - np.dot(s, s.T)

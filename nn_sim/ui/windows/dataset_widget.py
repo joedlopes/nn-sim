@@ -31,8 +31,9 @@ class DatasetWidget(dc.QWidget):
 
     def select_dataset(self, file_path: str | None = None) -> None:
         if file_path is not None:
-            file_path = dc.OpenFile("Selecte dataset file",
-                                    "nn_sim dataset (*.nnset);;All Files(*)")
+            file_path = dc.OpenFile(
+                "Selecte dataset file", "nn_sim dataset (*.nnset);;All Files(*)"
+            )
 
         if not file_path:
             return
@@ -41,7 +42,11 @@ class DatasetWidget(dc.QWidget):
 
         self.txt_name.setText(f"<b>Name:</b> {self.dataset.dataset_name}")
         self.txt_n_inputs.setText(f"<b>Number of Inputs:</b> {self.dataset.X.shape[1]}")
-        self.txt_n_outputs.setText(f"<b>Number of Outputs:</b> {self.dataset.Y.shape[1]}")
-        self.txt_n_samples.setText(f"<b>Number of Outputs:</b> {self.dataset.X.shape[0]}")
-        
-        self.on_dataset_changed(self.dataset)
+        self.txt_n_outputs.setText(
+            f"<b>Number of Outputs:</b> {self.dataset.Y.shape[1]}"
+        )
+        self.txt_n_samples.setText(
+            f"<b>Number of Outputs:</b> {self.dataset.X.shape[0]}"
+        )
+
+        self.on_dataset_changed.emit(self.dataset)
