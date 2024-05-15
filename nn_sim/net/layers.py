@@ -9,9 +9,9 @@ from . import loss_functions
 
 class Module:
 
-    def __init__(self, forward_func, backward_func) -> None:
+    def __init__(self, forward_func, diff_func) -> None:
         self.forward_func = forward_func
-        self.backward_func = backward_func
+        self.diff_func = diff_func
 
     def __call__(self, *args) -> np.ndarray:
         return self.forward(*args)
@@ -19,8 +19,8 @@ class Module:
     def forward(self, *args) -> np.ndarray:
         return self.forward_func(*args)
 
-    def backward(self, *args) -> np.ndarray:
-        return self.backward_func(*args)
+    def diff(self, *args) -> np.ndarray:
+        return self.diff_func(*args)
 
 
 # Activation Functions
@@ -70,7 +70,7 @@ class Softmax(Module):
         )
 
 
-# loss functions
+# Loss Function
 
 
 class SSELoss(Module):
@@ -121,40 +121,51 @@ class CategoricalCrossEntropyLoss(Module):
 # Linear Layer
 
 
-class Linear(Module):
-
-    def __init__(
-        self,
-        n_inputs: int,
-        n_outputs: int,
-        bias_active: bool,
-    ) -> None:
-        self.n_inputs: int = n_inputs
-        self.n_outputs: int = n_outputs
-        self.weights = np.random.randn(n_inputs, n_outputs)
-        self.bias = None
-        if bias_active:
-            self.bias = np.random.randn(n_outputs)
-
-    def forward(self, x: np.ndarray) -> np.ndarray:
-        x = x @ self.weights + self.bias
-        return x
-
-
 class HiddenLayer(Module):
 
     def __init__(
         self,
         n_inputs: int,
         n_outputs: int,
+        *,
         bias_active: bool,
         activation: Module,
     ) -> None:
         self.weights: np.ndarray = np.random.randn(n_inputs, n_outputs)
         self.bias_active: bool = bias_active
-        if bias_active:
-            self.bias = np.random.randn(n_outputs)
+        self.bias = np.random.randn(n_outputs)
+        if not bias_active:
+            self.bias = np.zeros_like(self.bias)
+
         self.activation: Module = activation
+        self.X = None  # useful for computing gradients
+        self.A = None
+        self.grad_weights = np.zeros_like(self.weights)
+        self.grad_bias = np.zeros_like(self.bias)
 
     def forward(self, x: np.ndarray) -> np.ndarray:
-        x = x @ self.weights + self.bias
+        self.A_IN = x.copy()  # store inputs for computing gradients
+
+        x = self.activation(x @ self.weights + self.bias)
+
+        self.A_OUT = x.copy()  # store outputs for computing delta
+        return x
+
+    def diff(self, delta_in: np.ndarray) -> np.ndarray:
+        # compute delta for the layer
+        delta = delta_in * self.activation.diff(self.A_OUT)
+
+        # compute gradients
+        self.grad_weights += self.A_IN.T @ delta
+
+        self.grad_bias += np.sum(delta, axis=0)
+
+        # compute delta for next layers
+        delta_out = delta @ self.weights.T
+        return delta_out
+
+    def zero_gradients(self) -> None:
+        self.X = None
+        self.A = None
+        self.grad_weights = np.zeros_like(self.weights)
+        self.bias = np.zeros_like(self.bias)
