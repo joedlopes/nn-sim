@@ -151,14 +151,15 @@ class HiddenLayer(Module):
         self.A_OUT = x.copy()  # store outputs for computing delta
         return x
 
-    def diff(self, delta_in: np.ndarray) -> np.ndarray:
+    def backward(self, delta_in: np.ndarray) -> np.ndarray:
         # compute delta for the layer
         delta = delta_in * self.activation.diff(self.A_OUT)
 
-        # compute gradients
-        self.grad_weights += self.A_IN.T @ delta
+        n = len(self.A_IN)
 
-        self.grad_bias += np.sum(delta, axis=0)
+        # compute gradients
+        self.grad_weights += self.A_IN.T @ delta / n
+        self.grad_bias += np.sum(delta, axis=0) / n
 
         # compute delta for next layers
         delta_out = delta @ self.weights.T

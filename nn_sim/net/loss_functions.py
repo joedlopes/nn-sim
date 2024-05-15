@@ -51,7 +51,7 @@ def binary_cross_entropy_loss(
     y_pred: np.ndarray,
 ) -> np.ndarray:
     # Clipping prediction values to avoid log(0) error
-    epsilon = 1e-12
+    epsilon = 1e-7
     y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
     bce_loss = -np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
     return bce_loss

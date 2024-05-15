@@ -27,14 +27,14 @@ class FeedFowardNeuralNetwork(Module):
             x = layer(x)
         return x
 
-    def diff(
+    def backward(
         self, y_pred: np.ndarray, y_true: np.ndarray, loss_func: Module
     ) -> np.ndarray:
 
         delta = loss_func.diff(y_pred, y_true)
 
         for layer in self.layers[::-1]:
-            delta = layer.diff(delta)
+            delta = layer.backward(delta)
 
     def zero_gradients(self):
         for layer in self.layers:
