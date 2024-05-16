@@ -3,19 +3,26 @@ import numpy as np
 # regression loss
 
 
-def sum_of_squared_errors(y_pred: np.ndarray, y_true: np.ndarray) -> float:
+def sum_of_squared_errors(
+    y_pred: np.ndarray,
+    y_true: np.ndarray,
+) -> float:
     loss = np.sum(0.5 * (y_pred - y_true) ** 2)
     return loss
 
 
 def sum_of_squared_errors_derivative(
-    y_pred: np.ndarray, y_true: np.ndarray
+    y_pred: np.ndarray,
+    y_true: np.ndarray,
 ) -> np.ndarray:
     loss = y_pred - y_true
     return loss
 
 
-def mean_squared_error(y_pred: np.ndarray, y_true: np.ndarray) -> float:
+def mean_squared_error(
+    y_pred: np.ndarray,
+    y_true: np.ndarray,
+) -> float:
     loss = np.mean((y_pred - y_true) ** 2)
     return loss
 
@@ -29,7 +36,10 @@ def mean_squared_error_derivative(
     return loss
 
 
-def mean_absolute_error(y_pred: np.ndarray, y_true: np.ndarray) -> float:
+def mean_absolute_error(
+    y_pred: np.ndarray,
+    y_true: np.ndarray,
+) -> float:
     loss = np.mean(np.abs(y_pred - y_true))
     return loss
 
@@ -47,39 +57,29 @@ def mean_absolute_error_derivative(
 
 
 def binary_cross_entropy_loss(
-    y_true: np.ndarray,
     y_pred: np.ndarray,
+    y_true: np.ndarray,
 ) -> np.ndarray:
-    # Clipping prediction values to avoid log(0) error
-    epsilon = 1e-7
+    epsilon = 1e-15
     y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
-    bce_loss = -np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
-    return bce_loss
+    loss = -np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+    return loss
 
 
 def binary_cross_entropy_loss_derivative(
-    y_true: np.ndarray,
     y_pred: np.ndarray,
+    y_true: np.ndarray,
 ) -> np.ndarray:
-    epsilon = 1e-12
+    epsilon = 1e-15
     y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
-    return -(y_true / y_pred) + (1 - y_true) / (1 - y_pred)
+    gradient = -(y_true / y_pred) + ((1 - y_true) / (1 - y_pred))
+    return gradient
 
 
 def categorical_cross_entropy(
-    y_true: np.ndarray,
     y_pred: np.ndarray,
+    y_true: np.ndarray,
 ):
-    """
-    Compute the categorical cross-entropy loss.
-
-    Parameters:
-    - y_true: np.ndarray, one-hot encoded true labels.
-    - y_pred: np.ndarray, predicted probabilities for each class.
-
-    Returns:
-    - loss: float, the categorical cross-entropy loss.
-    """
     # Small epsilon value to prevent undefined log operation
     epsilon = 1e-12
     y_pred = np.clip(y_pred, epsilon, 1.0 - epsilon)
@@ -91,19 +91,9 @@ def categorical_cross_entropy(
 
 
 def categorical_cross_entropy_derivative(
-    y_true: np.ndarray,
     y_pred: np.ndarray,
+    y_true: np.ndarray,
 ):
-    """
-    Compute the derivative of the categorical cross-entropy loss with respect to predictions.
-
-    Parameters:
-    - y_true: np.ndarray, one-hot encoded true labels.
-    - y_pred: np.ndarray, predicted probabilities for each class.
-
-    Returns:
-    - gradients: np.ndarray, derivatives of the loss with respect to each class prediction.
-    """
     # Small epsilon value to prevent division by zero
     epsilon = 1e-12
     y_pred = np.clip(y_pred, epsilon, 1.0 - epsilon)
