@@ -2,6 +2,7 @@ import numpy as np
 
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
+    x = np.clip(x, -500, 500)
     return 1.0 / (1 + np.exp(-x))
 
 
