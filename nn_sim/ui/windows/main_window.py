@@ -10,7 +10,7 @@ from ..widgets.property_editor_tree import (
 from .model_architecture_widget import ModelArchitectureWidget
 from .graph_view_widget import GraphViewWidget
 from .dataset_widget import DatasetWidget
-
+from .train_widget import TrainWidget
 
 class MainWindow(dc.QMainWindow, PropertyModelListener):
 
@@ -30,6 +30,9 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
         
         self.dataset_widget = DatasetWidget()
         self.dock_dataset = dc.DockWidget(title="Dataset", widget=self.dataset_widget)
+        
+        self.train_widget = TrainWidget()
+        self.dock_train = dc.DockWidget(title="Train", widget=self.train_widget)
 
         dc.MainWindow(
             widget=self,
@@ -39,13 +42,15 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
             ),
             docks=[
                 (dc.Qt.DockWidgetArea.LeftDockWidgetArea, self.dock_arch),
-                (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_graph),
+                (dc.Qt.DockWidgetArea.LeftDockWidgetArea, self.dock_graph),
                 (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_dataset),
+                (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_train),
             ],
         )
-        
-        self.splitDockWidget(self.dock_graph, self.dock_dataset, dc.Qt.Orientation.Horizontal)
 
+        self.splitDockWidget(self.dock_arch, self.dock_graph, dc.Qt.Orientation.Horizontal)
+
+        self.dataset_widget.on_dataset_changed.connect(self.train_widget.on_dataset_changed)
         self.arch_edit.emit_change()
 
     def on_property_item_changed(self, property_item_model: PropertyItemModel) -> None:
