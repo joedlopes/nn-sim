@@ -124,9 +124,9 @@ class DataLoader:
             Y = []
 
             for sample_idx in range(
-                batch_idx, min(len(dataset), batch_idx + self.batch_size)
+                batch_idx, min(len(self.dataset), batch_idx + self.batch_size)
             ):
-                x, y = dataset[sample_idx]
+                x, y = self.dataset[sample_idx]
                 X.append(x)
                 Y.append(y)
 

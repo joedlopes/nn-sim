@@ -1,7 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 from ..data.dataset_loader import DataLoader, DatasetNN
-from ..net.layers import Module
+from .layers import Module
 from .feedfoward import FeedFowardNeuralNetwork
 
 
@@ -45,8 +45,8 @@ def train_net(
                 learning_rate,
                 epochs,
                 loss_func,
-                batch_size,
                 momentum,
+                batch_size,
             )
         else:
             train_net_sgd_momentum(

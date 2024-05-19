@@ -25,7 +25,7 @@ class TrainWidget(dc.QWidget):
             on_index_changed=self.on_optim_changed,
         )
 
-        self.sp_epochs = dc.SpinBox(range=(1, 1000000), single_step=10, value=1)
+        self.sp_epochs = dc.SpinBox(range=(1, 1000000), single_step=10, value=100)
 
         self.cb_batch_mode = dc.ComboBox(
             selected_item="Mini Batch",
