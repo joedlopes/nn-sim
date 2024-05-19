@@ -61,7 +61,7 @@ PARAMS_ARCHITECTURE = {
                             "ReLU",
                             "Sigmoid",
                             "Step",
-                            "Tanh",
+                            # "Tanh",
                         ],
                     },
                 },
@@ -93,7 +93,7 @@ PARAMS_ARCHITECTURE = {
                     },
                 },
                 {
-                    "id": "arch_losses",
+                    "id": "arch_loss_function",
                     "name": "Loss Function",
                     "value": "Sum of Squared Errors",
                     "options": {
@@ -150,7 +150,7 @@ PARAMS_LAYER = {
                             "ReLU",
                             "Sigmoid",
                             "Step",
-                            "Tanh",
+                            # "Tanh",
                         ],
                     },
                 },

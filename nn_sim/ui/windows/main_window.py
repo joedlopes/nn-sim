@@ -4,7 +4,6 @@ from ..widgets.property_editor_tree import (
     PropertyItemModel,
     PropertyModel,
     PropertyModelListener,
-    PropertyTreeWidget,
 )
 
 from .model_architecture_widget import ModelArchitectureWidget
@@ -106,14 +105,29 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
         print(train_params)
 
         # read last model
+        loss_func = get_loss_function_by_name(model_info["arch_loss_function"])
 
         net = create_net(model_info)
         self.net = net
         print(str(net))
 
+        train_net(net, dataset, train_params, loss_func)
 
+
+from tqdm import tqdm
 from ...net.feedfoward import FeedFowardNeuralNetwork
-from ...net.layers import IdentityActivation, Sigmoid, Step, ReLU, Module
+from ...net.layers import (
+    IdentityActivation,
+    Sigmoid,
+    Step,
+    ReLU,
+    Module,
+    BinaryCrossEntropyLoss,
+    SSELoss,
+    MSELoss,
+    MAELoss,
+)
+from ...data.dataset_loader import DatasetNN, DataLoader
 
 
 def get_activation_function_by_name(name: str) -> Module:
@@ -126,6 +140,18 @@ def get_activation_function_by_name(name: str) -> Module:
     if name == "Step":
         return Step()
     raise AttributeError(f"{name} is not a valid activation function.")
+
+
+def get_loss_function_by_name(name: str) -> Module:
+    if name == "Sum of Squared Errors":
+        return SSELoss()
+    if name == "Binary Cross Entropy Loss (log-loss)":
+        return BinaryCrossEntropyLoss()
+    if name == "Mean Squared Error (MSE)":
+        return MSELoss()
+    if name == "Mean Absolute Error (MAE)":
+        return MAELoss()
+    raise AttributeError(f"{name} is not a valid loss function.")
 
 
 def create_net(model_info: dict):
@@ -149,3 +175,114 @@ def create_net(model_info: dict):
     layers.append((n_outputs, has_bias, activation_function))
     net = FeedFowardNeuralNetwork(n_inputs, layers)
     return net
+
+
+def train_net(
+    net: FeedFowardNeuralNetwork,
+    dataset: DatasetNN,
+    train_params: dict[str, str | int | float],
+    loss_func: Module,
+):
+    epochs = train_params["epochs"]
+    mini_batch = train_params["batch_mode"] == "Mini Batch"
+    if mini_batch:
+        batch_size = train_params["batch_size"]
+    learning_rate = train_params["learning_rate"]
+    if train_params["optim"] == "SGD":
+
+        if mini_batch:
+            train_net_sgd_mini_batch(
+                net,
+                dataset,
+                learning_rate,
+                epochs,
+                loss_func,
+                batch_size,
+            )
+        else:
+            train_net_sgd(
+                net,
+                dataset,
+                learning_rate,
+                epochs,
+                loss_func,
+            )
+
+
+def train_net_sgd(
+    net: FeedFowardNeuralNetwork,
+    dataset: DatasetNN,
+    learning_rate: float,
+    epochs: int,
+    loss_func: Module,
+):
+    X = dataset.X
+    Y = dataset.Y
+    train_losses = list()
+    for epoch in tqdm(range(epochs)):
+
+        net.zero_gradients()
+        y_pred = net(X)
+        train_loss = loss_func(y_pred, Y)
+        train_losses.append(train_loss)
+
+        net.backward(y_pred, Y, loss_func)
+
+        for layer in net.layers:
+            layer.weights = layer.weights - learning_rate * layer.grad_weights
+            layer.bias = layer.bias - learning_rate * layer.grad_bias
+
+    print("Train Loss: ", train_loss)
+
+
+def train_net_sgd_mini_batch(
+    net: FeedFowardNeuralNetwork,
+    dataset: DatasetNN,
+    learning_rate: float,
+    epochs: int,
+    loss_func: Module,
+    batch_size: int,
+):
+    pass
+
+
+def train_net_sgd_momentum(
+    net: FeedFowardNeuralNetwork,
+    dataset: DatasetNN,
+    learning_rate: float,
+    epochs: int,
+    loss_func: Module,
+):
+    pass
+
+
+def train_net_sgd_momentum_mini_batch(
+    net: FeedFowardNeuralNetwork,
+    dataset: DatasetNN,
+    learning_rate: float,
+    epochs: int,
+    batch_size: int,
+    loss_func: Module,
+):
+    pass
+
+
+def train_net_adam(
+    net: FeedFowardNeuralNetwork,
+    dataset: DatasetNN,
+    learning_rate: float,
+    epochs: int,
+    loss_func: Module,
+):
+    pass
+
+
+def train_net_adam_mini_batch(
+    net: FeedFowardNeuralNetwork,
+    dataset: DatasetNN,
+    learning_rate: float,
+    epochs: int,
+    batch_size: int,
+    loss_func: Module,
+):
+    pass

@@ -138,7 +138,7 @@ class TrainWidget(dc.QWidget):
 
     def get_parameters(self) -> None:
         out = dict(
-            lr=self.sp_lr.value(),
+            learning_rate=self.sp_lr.value(),
             optim=self.cb_optim.currentText(),
             epochs=self.sp_epochs.value(),
             batch_mode=self.cb_batch_mode.currentText(),
