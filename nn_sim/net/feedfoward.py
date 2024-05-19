@@ -39,3 +39,10 @@ class FeedFowardNeuralNetwork(Module):
     def zero_gradients(self):
         for layer in self.layers:
             layer.zero_gradients()
+
+    def __str__(self) -> str:
+        txt = "FeedFowardNeuralNetwork(\n"
+        for idx, layer in enumerate(self.layers):
+            txt += f"\tLayer [{idx}] Inputs: {layer.weights.shape[0]}, Outputs: {layer.weights.shape[1]}, Activation: {layer.activation.__class__.__name__}\n"
+        txt += ")"
+        return txt

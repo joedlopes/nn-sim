@@ -59,9 +59,14 @@ BRUSH_BIAS = QBrush(QColor(200, 200, 0, 255))
 BRUSH_WEIGHT = QBrush(QColor(0, 255, 0, 255))
 
 
-def create_circle(x: float, y: float, size: float,
-                  brush: QBrush, pen: QPen, z_value: int = 10,
-                  ) -> QGraphicsEllipseItem:
+def create_circle(
+    x: float,
+    y: float,
+    size: float,
+    brush: QBrush,
+    pen: QPen,
+    z_value: int = 10,
+) -> QGraphicsEllipseItem:
     circle = QGraphicsEllipseItem(x, y, size, size)
     circle.setBrush(brush)
     circle.setPen(pen)
@@ -134,7 +139,9 @@ class GraphViewWidget(QGraphicsView):
                 y += VERTICAL_DISTANCE
 
             if len(biases) > idx_layer and biases[idx_layer]:
-                circle = create_circle(x+NEURON_SIZE*2, y, NEURON_SIZE, BRUSH_BIAS, pen, 10)
+                circle = create_circle(
+                    x + NEURON_SIZE * 2, y, NEURON_SIZE, BRUSH_BIAS, pen, 10
+                )
                 self._scene.addItem(circle)
                 self._biases.append(circle)
             else:
@@ -157,7 +164,8 @@ class GraphViewWidget(QGraphicsView):
                         n1.rect().center().y(),
                         n2.rect().center().x(),
                         n2.rect().center().y(),
-                        pen_weight, 9,
+                        pen_weight,
+                        9,
                     )
                     self._scene.addItem(line)
                     weights.append(line)
@@ -170,7 +178,8 @@ class GraphViewWidget(QGraphicsView):
                             b.rect().center().y(),
                             n2.rect().center().x(),
                             n2.rect().center().y(),
-                            pen_weight, 9,
+                            pen_weight,
+                            9,
                         )
                         self._scene.addItem(line)
                         weights.append(line)

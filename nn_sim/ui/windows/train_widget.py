@@ -21,13 +21,39 @@ class TrainWidget(dc.QWidget):
                 "SGD",
                 "SGD with Momentum",
                 "ADAM",
-                "RMSprop",
             ],
+            on_index_changed=self.on_optim_changed,
         )
 
-        self.cb_batch_mode = dc.ComboBox(selected_item="Mini Batch", items=["Mini Batch", "Single Batch (all samples)"], on_index_changed=self.batch_mode_changed)
+        self.sp_epochs = dc.SpinBox(range=(1, 1000000), single_step=10, value=1)
+
+        self.cb_batch_mode = dc.ComboBox(
+            selected_item="Mini Batch",
+            items=["Mini Batch", "Single Batch (all samples)"],
+            on_index_changed=self.batch_mode_changed,
+        )
         self.sp_batch_size = dc.SpinBox(range=(1, 100), value=100, single_step=1)
         self.max_batch_size = 100
+
+        self.lb_momentum = dc.Label("Momentum:")
+        self.sp_momentum = dc.DoubleSpinBox(
+            range=(0.001, 1.0), value=0.9, single_step=0.01, decimals=3
+        )
+
+        self.lb_beta1 = dc.Label("Beta 1:")
+        self.sp_beta1 = dc.DoubleSpinBox(
+            range=(0.001, 1.0), value=0.9, single_step=0.001, decimals=3
+        )
+
+        self.lb_beta2 = dc.Label("Beta 2:")
+        self.sp_beta2 = dc.DoubleSpinBox(
+            range=(0.001, 1.0), value=0.999, single_step=0.001, decimals=3
+        )
+
+        self.lb_episilon = dc.Label("Episilon:")
+        self.sp_episilon = dc.DoubleSpinBox(
+            range=(0.00000001, 1.0), value=0.0000001, single_step=0.0000001, decimals=8
+        )
 
         dc.Widget(
             widget=self,
@@ -36,15 +62,27 @@ class TrainWidget(dc.QWidget):
                 self.btn_start_train,
                 dc.Label("Learning Rate:"),
                 self.sp_lr,
+                dc.Label("Epochs:"),
+                self.sp_epochs,
                 dc.Label("Batch Mode:"),
                 self.cb_batch_mode,
                 dc.Label("Batch Size:"),
                 self.sp_batch_size,
-                dc.Label("Optimizer"),
+                dc.Label("Optimizer:"),
                 self.cb_optim,
+                self.lb_momentum,
+                self.sp_momentum,
+                self.lb_beta1,
+                self.sp_beta1,
+                self.lb_beta2,
+                self.sp_beta2,
+                self.lb_episilon,
+                self.sp_episilon,
                 align=dc.Align.Top,
-            )
+            ),
         )
+
+        self.on_optim_changed()
 
     def on_dataset_changed(self, dataset: DatasetNN) -> None:
         self.max_batch_size = len(dataset)
@@ -57,3 +95,63 @@ class TrainWidget(dc.QWidget):
         else:
             self.sp_batch_size.setValue(self.max_batch_size)
             self.sp_batch_size.setEnabled(False)
+
+    def on_optim_changed(self, arg1=None) -> None:
+        optim = self.cb_optim.currentText()
+        if optim == "SGD":
+            for item in [
+                self.lb_momentum,
+                self.sp_momentum,
+                self.lb_beta1,
+                self.sp_beta1,
+                self.lb_beta2,
+                self.sp_beta2,
+                self.lb_episilon,
+                self.sp_episilon,
+            ]:
+                item.setVisible(False)
+        elif optim == "SGD with Momentum":
+            for item in [
+                self.lb_beta1,
+                self.sp_beta1,
+                self.lb_beta2,
+                self.sp_beta2,
+                self.lb_episilon,
+                self.sp_episilon,
+            ]:
+                item.setVisible(False)
+
+            self.lb_momentum.setVisible(True)
+            self.sp_momentum.setVisible(True)
+        else:
+            self.lb_momentum.setVisible(False)
+            self.sp_momentum.setVisible(False)
+            for item in [
+                self.lb_beta1,
+                self.sp_beta1,
+                self.lb_beta2,
+                self.sp_beta2,
+                self.lb_episilon,
+                self.sp_episilon,
+            ]:
+                item.setVisible(True)
+
+    def get_parameters(self) -> None:
+        out = dict(
+            lr=self.sp_lr.value(),
+            optim=self.cb_optim.currentText(),
+            epochs=self.sp_epochs.value(),
+            batch_mode=self.cb_batch_mode.currentText(),
+        )
+
+        if out["batch_mode"] == "Mini Batch":
+            out["batch_size"] = self.sp_batch_size.value()
+
+        if out["optim"] == "SGD with Momentum":
+            out["momentum"] = self.sp_momentum.value()
+        elif out["optim"] == "ADAM":
+            out["beta1"] = self.sp_beta1.value()
+            out["beta2"] = self.sp_beta2.value()
+            out["episilon"] = self.sp_episilon.value()
+
+        return out
