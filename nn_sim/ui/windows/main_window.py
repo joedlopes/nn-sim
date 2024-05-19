@@ -11,6 +11,8 @@ from .graph_view_widget import GraphViewWidget
 from .dataset_widget import DatasetWidget
 from .train_widget import TrainWidget
 
+from ...net import train
+
 
 class MainWindow(dc.QMainWindow, PropertyModelListener):
 
@@ -111,7 +113,7 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
         self.net = net
         print(str(net))
 
-        train_net(net, dataset, train_params, loss_func)
+        train.train_net(net, dataset, train_params, loss_func)
 
 
 from tqdm import tqdm
@@ -175,114 +177,3 @@ def create_net(model_info: dict):
     layers.append((n_outputs, has_bias, activation_function))
     net = FeedFowardNeuralNetwork(n_inputs, layers)
     return net
-
-
-def train_net(
-    net: FeedFowardNeuralNetwork,
-    dataset: DatasetNN,
-    train_params: dict[str, str | int | float],
-    loss_func: Module,
-):
-    epochs = train_params["epochs"]
-    mini_batch = train_params["batch_mode"] == "Mini Batch"
-    if mini_batch:
-        batch_size = train_params["batch_size"]
-    learning_rate = train_params["learning_rate"]
-    if train_params["optim"] == "SGD":
-
-        if mini_batch:
-            train_net_sgd_mini_batch(
-                net,
-                dataset,
-                learning_rate,
-                epochs,
-                loss_func,
-                batch_size,
-            )
-        else:
-            train_net_sgd(
-                net,
-                dataset,
-                learning_rate,
-                epochs,
-                loss_func,
-            )
-
-
-def train_net_sgd(
-    net: FeedFowardNeuralNetwork,
-    dataset: DatasetNN,
-    learning_rate: float,
-    epochs: int,
-    loss_func: Module,
-):
-    X = dataset.X
-    Y = dataset.Y
-    train_losses = list()
-    for epoch in tqdm(range(epochs)):
-
-        net.zero_gradients()
-        y_pred = net(X)
-        train_loss = loss_func(y_pred, Y)
-        train_losses.append(train_loss)
-
-        net.backward(y_pred, Y, loss_func)
-
-        for layer in net.layers:
-            layer.weights = layer.weights - learning_rate * layer.grad_weights
-            layer.bias = layer.bias - learning_rate * layer.grad_bias
-
-    print("Train Loss: ", train_loss)
-
-
-def train_net_sgd_mini_batch(
-    net: FeedFowardNeuralNetwork,
-    dataset: DatasetNN,
-    learning_rate: float,
-    epochs: int,
-    loss_func: Module,
-    batch_size: int,
-):
-    pass
-
-
-def train_net_sgd_momentum(
-    net: FeedFowardNeuralNetwork,
-    dataset: DatasetNN,
-    learning_rate: float,
-    epochs: int,
-    loss_func: Module,
-):
-    pass
-
-
-def train_net_sgd_momentum_mini_batch(
-    net: FeedFowardNeuralNetwork,
-    dataset: DatasetNN,
-    learning_rate: float,
-    epochs: int,
-    batch_size: int,
-    loss_func: Module,
-):
-    pass
-
-
-def train_net_adam(
-    net: FeedFowardNeuralNetwork,
-    dataset: DatasetNN,
-    learning_rate: float,
-    epochs: int,
-    loss_func: Module,
-):
-    pass
-
-
-def train_net_adam_mini_batch(
-    net: FeedFowardNeuralNetwork,
-    dataset: DatasetNN,
-    learning_rate: float,
-    epochs: int,
-    batch_size: int,
-    loss_func: Module,
-):
-    pass

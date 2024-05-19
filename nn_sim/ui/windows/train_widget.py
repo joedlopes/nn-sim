@@ -50,8 +50,8 @@ class TrainWidget(dc.QWidget):
             range=(0.001, 1.0), value=0.999, single_step=0.001, decimals=3
         )
 
-        self.lb_episilon = dc.Label("Episilon:")
-        self.sp_episilon = dc.DoubleSpinBox(
+        self.lb_epsilon = dc.Label("Epsilon:")
+        self.sp_epsilon = dc.DoubleSpinBox(
             range=(0.00000001, 1.0), value=0.0000001, single_step=0.0000001, decimals=8
         )
 
@@ -76,8 +76,8 @@ class TrainWidget(dc.QWidget):
                 self.sp_beta1,
                 self.lb_beta2,
                 self.sp_beta2,
-                self.lb_episilon,
-                self.sp_episilon,
+                self.lb_epsilon,
+                self.sp_epsilon,
                 align=dc.Align.Top,
             ),
         )
@@ -106,8 +106,8 @@ class TrainWidget(dc.QWidget):
                 self.sp_beta1,
                 self.lb_beta2,
                 self.sp_beta2,
-                self.lb_episilon,
-                self.sp_episilon,
+                self.lb_epsilon,
+                self.sp_epsilon,
             ]:
                 item.setVisible(False)
         elif optim == "SGD with Momentum":
@@ -116,8 +116,8 @@ class TrainWidget(dc.QWidget):
                 self.sp_beta1,
                 self.lb_beta2,
                 self.sp_beta2,
-                self.lb_episilon,
-                self.sp_episilon,
+                self.lb_epsilon,
+                self.sp_epsilon,
             ]:
                 item.setVisible(False)
 
@@ -131,8 +131,8 @@ class TrainWidget(dc.QWidget):
                 self.sp_beta1,
                 self.lb_beta2,
                 self.sp_beta2,
-                self.lb_episilon,
-                self.sp_episilon,
+                self.lb_epsilon,
+                self.sp_epsilon,
             ]:
                 item.setVisible(True)
 
@@ -152,6 +152,6 @@ class TrainWidget(dc.QWidget):
         elif out["optim"] == "ADAM":
             out["beta1"] = self.sp_beta1.value()
             out["beta2"] = self.sp_beta2.value()
-            out["episilon"] = self.sp_episilon.value()
+            out["epsilon"] = self.sp_epsilon.value()
 
         return out
