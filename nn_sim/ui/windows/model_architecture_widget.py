@@ -24,7 +24,7 @@ PARAMS_ARCHITECTURE = {
                     "options": {
                         "type": "integer",
                         "can_be_null": False,
-                        "default_value": 2,
+                        "default_value": 4,
                         "group": False,
                         "number_spinner_editor": True,
                         "number_min_value": 1,
@@ -39,7 +39,7 @@ PARAMS_ARCHITECTURE = {
                     "options": {
                         "type": "integer",
                         "can_be_null": False,
-                        "default_value": 2,
+                        "default_value": 3,
                         "group": False,
                         "number_spinner_editor": True,
                         "number_min_value": 1,

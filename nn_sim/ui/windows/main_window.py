@@ -1,3 +1,5 @@
+import numpy as np
+
 from ..helpers import uihelper as dc
 
 from ..widgets.property_editor_tree import (
@@ -10,6 +12,7 @@ from .model_architecture_widget import ModelArchitectureWidget
 from .graph_view_widget import GraphViewWidget
 from .dataset_widget import DatasetWidget
 from .train_widget import TrainWidget
+from .plot_loss_widget import PlotLossWidget
 
 from ...net import train
 
@@ -19,6 +22,7 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
     def __init__(self, ctx=None) -> None:
         super().__init__()
         self.ctx = ctx
+        self.net = None
 
         self.arch_edit = ModelArchitectureWidget()
         self.dock_arch = dc.DockWidget(
@@ -36,6 +40,9 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
         self.train_widget = TrainWidget()
         self.dock_train = dc.DockWidget(title="Train", widget=self.train_widget)
 
+        self.plot_loss = PlotLossWidget()
+        self.dock_loss_plot = dc.DockWidget(title="Loss Plot", widget=self.plot_loss)
+
         dc.MainWindow(
             widget=self,
             window_ops=dc.WindowOps(
@@ -47,6 +54,7 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
                 (dc.Qt.DockWidgetArea.LeftDockWidgetArea, self.dock_graph),
                 (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_dataset),
                 (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_train),
+                (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_loss_plot),
             ],
         )
 
@@ -54,12 +62,19 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
             self.dock_arch, self.dock_graph, dc.Qt.Orientation.Horizontal
         )
 
+        self.splitDockWidget(
+            self.dock_graph, self.dock_loss_plot, dc.Qt.Orientation.Vertical
+        )
+
         self.dataset_widget.on_dataset_changed.connect(
             self.train_widget.on_dataset_changed
         )
         self.arch_edit.emit_change()
 
+        self.dataset_widget.select_dataset('./datasets/iris.nnset')
+
         self.train_widget.btn_start_train.clicked.connect(self.start_training)
+        self.dataset_widget.on_sample_changed.connect(self.on_dataset_sample_index_changed)
 
     def on_property_item_changed(self, property_item_model: PropertyItemModel) -> None:
         print(property_item_model)
@@ -113,10 +128,91 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
         self.net = net
         print(str(net))
 
-        train.train_net(net, dataset, train_params, loss_func)
+        loss_train = train.train_net(net, dataset, train_params, loss_func)
+        self.plot_loss.set_train_loss(loss_train)
+
+        layers_data = list()
+        v_min = None
+        v_max = None
+        for idx, layer in enumerate(net.layers):
+            w = layer.weights
+            if layer.bias_active:
+                w = np.row_stack((w, layer.bias))
+            layers_data.append(w)
+
+            if v_min is None:
+                v_min = w.min()
+            else:
+                v_min = min(w.min(), v_min)
+            if v_max is None:
+                v_max = w.max()
+            else:
+                v_max = max(w.max(), v_max)
+
+        self.graph_view.update_net_weights_and_bias(layers_data, v_min, v_max)
+
+    def on_dataset_sample_index_changed(self, sample_index: int) -> None:
+        if self.net is None:
+            dc.Error("Network not trained", "Train the network model first.", self)
+            return
+
+        dataset = self.dataset_widget.dataset
+        x, y = dataset[sample_index]
+        X = np.expand_dims(x, axis=0)
+        Y = np.expand_dims(y, axis=0)
+
+        self.net.zero_gradients()
+        y_pred = self.net(X)
+
+        neurons_data = [x]
+        layers_data = []
+
+        n_min = None
+        n_max = None
+        v_min = None
+        v_max = None
+        for layer in self.net.layers:
+            # neuros
+            neurons_data.append(layer.A_OUT)
+
+            if n_min is None:
+                n_min = layer.A_OUT.min()
+            else:
+                n_min = min(layer.A_OUT.min(), n_min)
+
+            if n_max is None:
+                n_max = layer.A_OUT.max()
+            else:
+                n_max = max(layer.A_OUT.max(), n_max)
+
+            # weights and bias
+            ni, no = layer.weights.shape
+
+            print("wx", layer.weights.shape, x.shape)
+
+            aux = np.tile(x.reshape(-1, 1), (1, no))
+
+            w = layer.weights * aux
+            x = layer.A_OUT
+            if layer.bias_active:
+                w = np.row_stack((w, layer.bias))
+            layers_data.append(w)
+
+            if v_min is None:
+                v_min = w.min()
+            else:
+                v_min = min(w.min(), v_min)
+            if v_max is None:
+                v_max = w.max()
+            else:
+                v_max = max(w.max(), v_max)
+
+        print("neuron", n_min, n_max)
+        print("weig", v_min, v_max)
+        self.graph_view.update_net_neurons(neurons_data, n_min, n_max)
+        self.graph_view.update_net_weights_and_bias(layers_data, v_min, v_max)
 
 
-from tqdm import tqdm
 from ...net.feedfoward import FeedFowardNeuralNetwork
 from ...net.layers import (
     IdentityActivation,
@@ -129,7 +225,6 @@ from ...net.layers import (
     MSELoss,
     MAELoss,
 )
-from ...data.dataset_loader import DatasetNN, DataLoader
 
 
 def get_activation_function_by_name(name: str) -> Module:
@@ -157,7 +252,6 @@ def get_loss_function_by_name(name: str) -> Module:
 
 
 def create_net(model_info: dict):
-
     n_outputs = model_info["arch_n_outputs"]
     n_inputs = model_info["arch_n_inputs"]
     n_hidden = model_info["arch_n_hidden"]

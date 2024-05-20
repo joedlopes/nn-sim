@@ -1,4 +1,6 @@
 from ..helpers import uihelper as dc
+import numpy as np
+import cv2
 
 from PySide6.QtWidgets import (
     QGraphicsScene,
@@ -48,15 +50,23 @@ NEURON_SIZE = 50
 NEURON_SIZE_2 = NEURON_SIZE / 2.0
 
 VERTICAL_DISTANCE = 200
-HORIZONTAL_DISTANCE = 500
+HORIZONTAL_DISTANCE = 1000
 
 NEURON_PEN_WIDTH = 3
-NEURON_PEN_BRUSH = QBrush(QColor(255, 255, 255, 230))
+NEURON_PEN_BRUSH = QBrush(QColor(240, 240, 240, 230))
 WEIGHT_WIDTH = 2
 
 BRUSH_NEURON = QBrush(QColor(0, 0, 200, 255))
 BRUSH_BIAS = QBrush(QColor(200, 200, 0, 255))
 BRUSH_WEIGHT = QBrush(QColor(0, 255, 0, 255))
+
+COLORMAP = cv2.applyColorMap(
+    np.arange(256).astype(np.uint8), cv2.COLORMAP_WINTER,
+).reshape((-1, 3))
+
+COLORMAP_NEURONS = cv2.applyColorMap(
+    np.arange(256).astype(np.uint8), cv2.COLORMAP_PLASMA,
+).reshape((-1, 3))
 
 
 def create_circle(
@@ -98,11 +108,11 @@ class GraphViewWidget(QGraphicsView):
 
         self._scene = QGraphicsScene(self)
         self.setScene(self._scene)
-        self._scene.setBackgroundBrush(QBrush(QColor(0, 0, 0, 255)))
+        self._scene.setBackgroundBrush(QBrush(QColor(10, 10, 10, 255)))
 
-        self._neurons = []
+        self._neurons: list[list[QGraphicsEllipseItem]] = []
         self._biases = []
-        self._weights = []
+        self._weights: list[list[QGraphicsLineItem]] = []
 
     def update_graph(self, model_info: dict) -> None:
         self._neurons.clear()
@@ -167,22 +177,23 @@ class GraphViewWidget(QGraphicsView):
                         pen_weight,
                         9,
                     )
+                    line.weight_value = 1.0
                     self._scene.addItem(line)
                     weights.append(line)
 
-                if len(biases) > idx_layer and biases[idx_layer] is True:
-                    b = self._biases[idx_layer]
-                    for n2 in self._neurons[idx_layer + 1]:
-                        line = create_line(
-                            b.rect().center().x(),
-                            b.rect().center().y(),
-                            n2.rect().center().x(),
-                            n2.rect().center().y(),
-                            pen_weight,
-                            9,
-                        )
-                        self._scene.addItem(line)
-                        weights.append(line)
+            if len(biases) > idx_layer and biases[idx_layer] is True:
+                b = self._biases[idx_layer]
+                for n2 in self._neurons[idx_layer + 1]:
+                    line = create_line(
+                        b.rect().center().x(),
+                        b.rect().center().y(),
+                        n2.rect().center().x(),
+                        n2.rect().center().y(),
+                        pen_weight,
+                        9,
+                    )
+                    self._scene.addItem(line)
+                    weights.append(line)
 
         rect = self._scene.itemsBoundingRect()
         rect.setLeft(-HORIZONTAL_DISTANCE)
@@ -227,3 +238,44 @@ class GraphViewWidget(QGraphicsView):
             self._isPanning = False
             self.setCursor(Qt.ArrowCursor)
         super().mouseReleaseEvent(event)
+
+    def update_net_weights_and_bias(
+        self, layers_data: list[np.ndarray],
+        v_min: float = 0.0, v_max: float = 1.0,
+    ):
+        """update the edges (weights) from neurons
+            layers_data: [
+                np.ndarray - array including bias in the last row,
+            ]
+        """
+        n = len(self._weights)
+
+        assert n == len(layers_data), "Invalida Layer Data"
+        pen = QPen()
+        pen.setWidth(3)
+
+        for layer_idx in range(n):
+            wb = layers_data[layer_idx].flatten()
+            # v_min = wb.min()
+            # v_max = wb.max()
+            for idx, line in enumerate(self._weights[layer_idx]):
+                line.weight_value = wb[idx]
+                v = (wb[idx] - v_min) / (v_max - v_min)
+                vc = COLORMAP[int(min(v * 255, 255))]
+                pen.setBrush(QBrush(QColor(vc[2], vc[1], vc[0], 200)))
+                line.setPen(pen)
+
+    def update_net_neurons(
+        self,
+        neurons_data: list[np.ndarray],
+        v_min: float = 0.0,
+        v_max: float = 1.0,
+    ):
+        for idx_layer, neuron_layers in enumerate(self._neurons):
+            activations = neurons_data[idx_layer].flatten()
+            print(idx_layer, activations)
+
+            for idx_neuron, neuron in enumerate(neuron_layers):
+                v = (activations[idx_neuron] - v_min) / (v_max - v_min)
+                vc = COLORMAP_NEURONS[int(min(v * 255, 255))]
+                neuron.setBrush(QBrush(QColor(vc[2], vc[1], vc[0], 200)))

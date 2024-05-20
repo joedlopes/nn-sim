@@ -6,6 +6,7 @@ from ...data.dataset_loader import DatasetNN
 class DatasetWidget(dc.QWidget):
 
     on_dataset_changed = dc.Signal(object)
+    on_sample_changed = dc.Signal(object)
 
     def __init__(self):
         super().__init__()
@@ -14,6 +15,11 @@ class DatasetWidget(dc.QWidget):
         self.txt_n_inputs = dc.Label("<b>Number of Inputs:</b>")
         self.txt_n_outputs = dc.Label("<b>Number of Outputs:</b>")
         self.txt_n_samples = dc.Label("<b>Number of Samples:</b>")
+
+        self.txt_current_sample = dc.Label("0")
+        self.btn_next_sample = dc.Button("Next >", on_click=self.next_sample)
+        self.btn_prev_sample = dc.Button("< Previous", on_click=self.prev_sample)
+        self.sample_index = 0
 
         dc.Widget(
             widget=self,
@@ -24,15 +30,36 @@ class DatasetWidget(dc.QWidget):
                 self.txt_n_inputs,
                 self.txt_n_outputs,
                 self.txt_n_samples,
+                dc.HLine(),
+                dc.Label("<b>Selected Sample:</b>"),
+                self.txt_current_sample,
+                dc.Rows(self.btn_prev_sample, self.btn_next_sample),
                 align=dc.Align.Top,
             ),
         )
         self.dataset: DatasetNN | None = None
 
+    def prev_sample(self) -> None:
+        if self.dataset is None:
+            return
+        self.sample_index -= 1
+        self.sample_index = max(0, self.sample_index)
+        self.on_sample_changed.emit(self.sample_index)
+        self.txt_current_sample.setText(f"{self.sample_index}")
+
+    def next_sample(self) -> None:
+        if self.dataset is None:
+            return
+        self.sample_index += 1
+        self.sample_index = min(len(self.dataset) - 1, self.sample_index)
+        self.on_sample_changed.emit(self.sample_index)
+        self.txt_current_sample.setText(f"{self.sample_index}")
+
     def select_dataset(self, file_path: str | None = None) -> None:
-        if file_path is not None:
+        print("select dataset", file_path)
+        if not file_path:
             file_path = dc.OpenFile(
-                "Selecte dataset file", "nn_sim dataset (*.nnset);;All Files(*)"
+                "Select dataset file", "nn_sim dataset (*.nnset);;All Files(*)"
             )
 
         if not file_path:

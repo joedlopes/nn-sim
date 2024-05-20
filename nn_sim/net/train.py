@@ -20,7 +20,7 @@ def train_net(
     if optim == "SGD":
 
         if mini_batch:
-            train_net_sgd_mini_batch(
+            return train_net_sgd_mini_batch(
                 net,
                 dataset,
                 learning_rate,
@@ -29,7 +29,7 @@ def train_net(
                 batch_size,
             )
         else:
-            train_net_sgd(
+            return train_net_sgd(
                 net,
                 dataset,
                 learning_rate,
@@ -39,7 +39,7 @@ def train_net(
     elif optim == "SGD with Momentum":
         momentum = train_params["momentum"]
         if mini_batch:
-            train_net_sgd_momentum_mini_batch(
+            return train_net_sgd_momentum_mini_batch(
                 net,
                 dataset,
                 learning_rate,
@@ -49,7 +49,7 @@ def train_net(
                 batch_size,
             )
         else:
-            train_net_sgd_momentum(
+            return train_net_sgd_momentum(
                 net,
                 dataset,
                 learning_rate,
@@ -62,7 +62,7 @@ def train_net(
         beta2 = train_params["beta2"]
         epsilon = train_params["epsilon"]
         if mini_batch:
-            train_net_adam_mini_batch(
+            return train_net_adam_mini_batch(
                 net,
                 dataset,
                 learning_rate,
@@ -74,7 +74,7 @@ def train_net(
                 batch_size
             )
         else:
-            train_net_adam(
+            return train_net_adam(
                 net,
                 dataset,
                 learning_rate,
@@ -84,6 +84,7 @@ def train_net(
                 beta2,
                 epsilon
             )
+    return None
 
 
 def train_net_sgd(
@@ -112,6 +113,7 @@ def train_net_sgd(
             layer.bias = layer.bias - learning_rate * layer.grad_bias
 
     print("Train Loss: ", train_loss)
+    return train_losses
 
 
 def train_net_sgd_mini_batch(
@@ -148,6 +150,7 @@ def train_net_sgd_mini_batch(
             layer.bias = layer.bias - learning_rate * layer.grad_bias
 
     print("Train Loss: ", train_loss)
+    return train_losses
 
 
 def train_net_sgd_momentum(
@@ -188,6 +191,7 @@ def train_net_sgd_momentum(
             layer.bias = layer.bias - layer.velocity_bias
 
     print("Train Loss: ", train_loss)
+    return train_losses
 
 
 def train_net_sgd_momentum_mini_batch(
@@ -235,6 +239,7 @@ def train_net_sgd_momentum_mini_batch(
             layer.bias = layer.bias - layer.velocity_bias
 
     print("Train Loss: ", train_loss)
+    return train_losses
 
 
 def train_net_adam(
@@ -290,6 +295,7 @@ def train_net_adam(
             layer.bias -= learning_rate * m_hat_bias / (np.sqrt(v_hat_bias) + epsilon)
 
     print("Train Loss: ", train_loss)
+    return train_losses
 
 
 def train_net_adam_mini_batch(
@@ -353,3 +359,4 @@ def train_net_adam_mini_batch(
             layer.bias -= learning_rate * m_hat_bias / (np.sqrt(v_hat_bias) + epsilon)
 
     print("Train Loss: ", train_loss)
+    return train_losses
