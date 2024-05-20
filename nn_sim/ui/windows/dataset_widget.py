@@ -66,6 +66,7 @@ class DatasetWidget(dc.QWidget):
             return
 
         self.dataset = DatasetNN(file_path)
+        self.sample_index = 0
 
         self.txt_name.setText(f"<b>Name:</b> {self.dataset.dataset_name}")
         self.txt_n_inputs.setText(f"<b>Number of Inputs:</b> {self.dataset.X.shape[1]}")
@@ -75,5 +76,5 @@ class DatasetWidget(dc.QWidget):
         self.txt_n_samples.setText(
             f"<b>Number of Outputs:</b> {self.dataset.X.shape[0]}"
         )
-
+        self.txt_current_sample.setText(f"{self.sample_index}")
         self.on_dataset_changed.emit(self.dataset)

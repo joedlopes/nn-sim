@@ -49,23 +49,30 @@ class FlowingLineItem(QGraphicsPathItem):
 NEURON_SIZE = 50
 NEURON_SIZE_2 = NEURON_SIZE / 2.0
 
-VERTICAL_DISTANCE = 200
-HORIZONTAL_DISTANCE = 1000
+VERTICAL_DISTANCE = 300
+HORIZONTAL_DISTANCE = 800
 
 NEURON_PEN_WIDTH = 3
 NEURON_PEN_BRUSH = QBrush(QColor(240, 240, 240, 230))
-WEIGHT_WIDTH = 2
+WEIGHT_WIDTH = 4
 
 BRUSH_NEURON = QBrush(QColor(0, 0, 200, 255))
 BRUSH_BIAS = QBrush(QColor(200, 200, 0, 255))
 BRUSH_WEIGHT = QBrush(QColor(0, 255, 0, 255))
 
+BACKGROUND_BRUSH = QBrush(QColor(5, 5, 10, 255))
+
 COLORMAP = cv2.applyColorMap(
-    np.arange(256).astype(np.uint8), cv2.COLORMAP_WINTER,
+    np.arange(256).astype(np.uint8),
+    cv2.COLORMAP_WINTER,
 ).reshape((-1, 3))
 
+COLORMAP = COLORMAP * np.linspace(0.3, 1.0, 256).reshape(-1, 1)
+COLORMAP = COLORMAP.astype(np.uint8)
+
 COLORMAP_NEURONS = cv2.applyColorMap(
-    np.arange(256).astype(np.uint8), cv2.COLORMAP_PLASMA,
+    np.arange(256).astype(np.uint8),
+    cv2.COLORMAP_OCEAN,
 ).reshape((-1, 3))
 
 
@@ -96,9 +103,9 @@ class GraphViewWidget(QGraphicsView):
     def __init__(self) -> None:
         super().__init__()
 
-        format = QSurfaceFormat.defaultFormat()
-        format.setSamples(16)
-        QSurfaceFormat.setDefaultFormat(format)
+        # format = QSurfaceFormat.defaultFormat()
+        # format.setSamples(32)
+        # QSurfaceFormat.setDefaultFormat(format)
 
         self.setDragMode(QGraphicsView.NoDrag)
         self._isPanning = False
@@ -108,7 +115,7 @@ class GraphViewWidget(QGraphicsView):
 
         self._scene = QGraphicsScene(self)
         self.setScene(self._scene)
-        self._scene.setBackgroundBrush(QBrush(QColor(10, 10, 10, 255)))
+        self._scene.setBackgroundBrush(BACKGROUND_BRUSH)
 
         self._neurons: list[list[QGraphicsEllipseItem]] = []
         self._biases = []
@@ -240,19 +247,21 @@ class GraphViewWidget(QGraphicsView):
         super().mouseReleaseEvent(event)
 
     def update_net_weights_and_bias(
-        self, layers_data: list[np.ndarray],
-        v_min: float = 0.0, v_max: float = 1.0,
+        self,
+        layers_data: list[np.ndarray],
+        v_min: float = 0.0,
+        v_max: float = 1.0,
     ):
         """update the edges (weights) from neurons
-            layers_data: [
-                np.ndarray - array including bias in the last row,
-            ]
+        layers_data: [
+            np.ndarray - array including bias in the last row,
+        ]
         """
         n = len(self._weights)
 
         assert n == len(layers_data), "Invalida Layer Data"
         pen = QPen()
-        pen.setWidth(3)
+        pen.setWidth(WEIGHT_WIDTH)
 
         for layer_idx in range(n):
             wb = layers_data[layer_idx].flatten()
@@ -261,8 +270,9 @@ class GraphViewWidget(QGraphicsView):
             for idx, line in enumerate(self._weights[layer_idx]):
                 line.weight_value = wb[idx]
                 v = (wb[idx] - v_min) / (v_max - v_min)
-                vc = COLORMAP[int(min(v * 255, 255))]
-                pen.setBrush(QBrush(QColor(vc[2], vc[1], vc[0], 200)))
+                v = min(max(v, 0.0), 1.0)
+                vc = COLORMAP[int(v * 255)]
+                pen.setBrush(QBrush(QColor(vc[2], vc[1], vc[0], 255)))
                 line.setPen(pen)
 
     def update_net_neurons(
@@ -277,5 +287,6 @@ class GraphViewWidget(QGraphicsView):
 
             for idx_neuron, neuron in enumerate(neuron_layers):
                 v = (activations[idx_neuron] - v_min) / (v_max - v_min)
-                vc = COLORMAP_NEURONS[int(min(v * 255, 255))]
-                neuron.setBrush(QBrush(QColor(vc[2], vc[1], vc[0], 200)))
+                v = min(max(v, 0.0), 1.0)
+                vc = COLORMAP_NEURONS[int(v * 255)]
+                neuron.setBrush(QBrush(QColor(vc[2], vc[1], vc[0], 255)))

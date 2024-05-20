@@ -13,6 +13,8 @@ from .graph_view_widget import GraphViewWidget
 from .dataset_widget import DatasetWidget
 from .train_widget import TrainWidget
 from .plot_loss_widget import PlotLossWidget
+from .plot_weights_widget import PlotWeightsWidget
+from .plot_activations_widget import PlotActivationsWidget
 
 from ...net import train
 
@@ -43,6 +45,16 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
         self.plot_loss = PlotLossWidget()
         self.dock_loss_plot = dc.DockWidget(title="Loss Plot", widget=self.plot_loss)
 
+        self.plot_weights = PlotWeightsWidget()
+        self.dock_weights_plot = dc.DockWidget(
+            title="Weights Plot", widget=self.plot_weights
+        )
+
+        self.plot_activations = PlotActivationsWidget()
+        self.dock_activations_plot = dc.DockWidget(
+            title="Activations Plot", widget=self.plot_activations
+        )
+
         dc.MainWindow(
             widget=self,
             window_ops=dc.WindowOps(
@@ -55,6 +67,8 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
                 (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_dataset),
                 (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_train),
                 (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_loss_plot),
+                (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_weights_plot),
+                (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_activations_plot),
             ],
         )
 
@@ -66,15 +80,27 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
             self.dock_graph, self.dock_loss_plot, dc.Qt.Orientation.Vertical
         )
 
+        self.splitDockWidget(
+            self.dock_graph, self.dock_weights_plot, dc.Qt.Orientation.Vertical
+        )
+
+        self.splitDockWidget(
+            self.dock_graph, self.dock_activations_plot, dc.Qt.Orientation.Vertical
+        )
+
+        # self.tabifyDockWidget(self.dock_loss_plot, self.dock_weights_plot)
+
         self.dataset_widget.on_dataset_changed.connect(
             self.train_widget.on_dataset_changed
         )
         self.arch_edit.emit_change()
 
-        self.dataset_widget.select_dataset('./datasets/iris.nnset')
+        self.dataset_widget.select_dataset("./datasets/iris.nnset")
 
         self.train_widget.btn_start_train.clicked.connect(self.start_training)
-        self.dataset_widget.on_sample_changed.connect(self.on_dataset_sample_index_changed)
+        self.dataset_widget.on_sample_changed.connect(
+            self.on_dataset_sample_index_changed
+        )
 
     def on_property_item_changed(self, property_item_model: PropertyItemModel) -> None:
         print(property_item_model)
@@ -150,6 +176,7 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
                 v_max = max(w.max(), v_max)
 
         self.graph_view.update_net_weights_and_bias(layers_data, v_min, v_max)
+        self.plot_weights.update_weights(layers_data)
 
     def on_dataset_sample_index_changed(self, sample_index: int) -> None:
         if self.net is None:
@@ -207,10 +234,12 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
             else:
                 v_max = max(w.max(), v_max)
 
-        print("neuron", n_min, n_max)
-        print("weig", v_min, v_max)
-        self.graph_view.update_net_neurons(neurons_data, n_min, n_max)
+        # n_min = min(0.0, n_min)
+        # n_max = max(1.0, n_max)
+        self.graph_view.update_net_neurons(neurons_data, 0.0, 1.0)
         self.graph_view.update_net_weights_and_bias(layers_data, v_min, v_max)
+        self.plot_weights.update_weights(layers_data)
+        self.plot_activations.update_activations(neurons_data)
 
 
 from ...net.feedfoward import FeedFowardNeuralNetwork
