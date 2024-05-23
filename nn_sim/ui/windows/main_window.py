@@ -15,8 +15,10 @@ from .train_widget import TrainWidget
 from .plot_loss_widget import PlotLossWidget
 from .plot_weights_widget import PlotWeightsWidget
 from .plot_activations_widget import PlotActivationsWidget
+from .plot_gradients_widget import PlotGradientsWidget
 
 from ...net import train
+from ...net import train_store_grad
 
 
 class MainWindow(dc.QMainWindow, PropertyModelListener):
@@ -55,6 +57,12 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
             title="Activations Plot", widget=self.plot_activations
         )
 
+        self.plot_gradients = PlotGradientsWidget()
+        self.dock_gradients_plot = dc.DockWidget(
+            title="Gradients Plot", widget=self.plot_gradients
+        )
+        self.gradients = None
+
         dc.MainWindow(
             widget=self,
             window_ops=dc.WindowOps(
@@ -68,6 +76,7 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
                 (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_train),
                 (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_loss_plot),
                 (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_weights_plot),
+                (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_gradients_plot),
                 (dc.Qt.DockWidgetArea.RightDockWidgetArea, self.dock_activations_plot),
             ],
         )
@@ -101,6 +110,29 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
         self.dataset_widget.on_sample_changed.connect(
             self.on_dataset_sample_index_changed
         )
+        self.current_grad_index = 0
+        self.train_widget.btn_next_gradient.clicked.connect(self.next_gradient)
+        self.train_widget.btn_prev_gradient.clicked.connect(self.prev_gradient)
+
+    def next_gradient(self) -> None:
+        if self.gradients is None:
+            return
+
+        self.current_grad_index += 1
+        if self.current_grad_index >= len(self.gradients):
+            self.current_grad_index = 0
+
+        self.update_gradients_plot()
+
+    def prev_gradient(self) -> None:
+        if self.gradients is None:
+            return
+
+        self.current_grad_index -= 1
+        if self.current_grad_index < 0:
+            self.current_grad_index = len(self.gradients) - 1
+
+        self.update_gradients_plot()
 
     def on_property_item_changed(self, property_item_model: PropertyItemModel) -> None:
         print(property_item_model)
@@ -112,6 +144,7 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
         print(property_model)
 
     def start_training(self) -> None:
+
         print("Start Training")
 
         model_info = self.arch_edit.get_model_info()
@@ -152,9 +185,18 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
 
         net = create_net(model_info)
         self.net = net
-        print(str(net))
+        # print(str(net))
 
-        loss_train = train.train_net(net, dataset, train_params, loss_func)
+        self.current_grad_index = 0
+        if self.train_widget.ck_store_gradients.isChecked():
+            loss_train, self.gradients = train_store_grad.train_net_adam(
+                net, dataset, train_params, loss_func
+            )
+            self.plot_gradients.update_gradients(self.gradients[0])
+        else:
+            loss_train = train.train_net(net, dataset, train_params, loss_func)
+            self.gradients = None
+
         self.plot_loss.set_train_loss(loss_train)
 
         layers_data = list()
@@ -215,8 +257,7 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
             # weights and bias
             ni, no = layer.weights.shape
 
-            print("wx", layer.weights.shape, x.shape)
-
+            # print("wx", layer.weights.shape, x.shape)
             aux = np.tile(x.reshape(-1, 1), (1, no))
 
             w = layer.weights * aux
@@ -234,12 +275,27 @@ class MainWindow(dc.QMainWindow, PropertyModelListener):
             else:
                 v_max = max(w.max(), v_max)
 
-        # n_min = min(0.0, n_min)
-        # n_max = max(1.0, n_max)
         self.graph_view.update_net_neurons(neurons_data, 0.0, 1.0)
         self.graph_view.update_net_weights_and_bias(layers_data, v_min, v_max)
         self.plot_weights.update_weights(layers_data)
         self.plot_activations.update_activations(neurons_data)
+
+    def update_gradients_plot(self) -> None:
+
+        self.train_widget.txt_epoch_grad.setText(
+            f"{len(self.gradients)} / {self.current_grad_index}"
+        )
+
+        grads = self.gradients[self.current_grad_index]
+
+        v_min = grads[0].min()
+        v_max = grads[0].max()
+        for g in grads:
+            v_max = max(v_max, g.max())
+            v_min = min(v_min, g.min())
+
+        self.plot_gradients.update_gradients(grads)
+        self.graph_view.update_net_weights_and_bias(grads, v_min, v_max)
 
 
 from ...net.feedfoward import FeedFowardNeuralNetwork

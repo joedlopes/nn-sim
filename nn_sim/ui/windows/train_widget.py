@@ -55,6 +55,11 @@ class TrainWidget(dc.QWidget):
             range=(0.00000001, 1.0), value=0.0000001, single_step=0.0000001, decimals=8
         )
 
+        self.ck_store_gradients = dc.CheckBox("Store Gradients")
+        self.btn_next_gradient = dc.Button("grad-next >>")
+        self.btn_prev_gradient = dc.Button("<< grad-prev")
+        self.txt_epoch_grad = dc.Label("")
+
         dc.Widget(
             widget=self,
             window_ops=dc.WindowOps(title="Train", size=(200, 200)),
@@ -78,6 +83,9 @@ class TrainWidget(dc.QWidget):
                 self.sp_beta2,
                 self.lb_epsilon,
                 self.sp_epsilon,
+                self.ck_store_gradients,
+                dc.Rows(self.btn_prev_gradient, self.btn_next_gradient),
+                self.txt_epoch_grad,
                 align=dc.Align.Top,
             ),
         )
@@ -108,6 +116,10 @@ class TrainWidget(dc.QWidget):
                 self.sp_beta2,
                 self.lb_epsilon,
                 self.sp_epsilon,
+                self.ck_store_gradients,
+                self.btn_prev_gradient,
+                self.btn_next_gradient,
+                self.txt_epoch_grad,
             ]:
                 item.setVisible(False)
         elif optim == "SGD with Momentum":
@@ -118,6 +130,10 @@ class TrainWidget(dc.QWidget):
                 self.sp_beta2,
                 self.lb_epsilon,
                 self.sp_epsilon,
+                self.ck_store_gradients,
+                self.btn_prev_gradient,
+                self.btn_next_gradient,
+                self.txt_epoch_grad,
             ]:
                 item.setVisible(False)
 
@@ -133,6 +149,10 @@ class TrainWidget(dc.QWidget):
                 self.sp_beta2,
                 self.lb_epsilon,
                 self.sp_epsilon,
+                self.ck_store_gradients,
+                self.btn_prev_gradient,
+                self.btn_next_gradient,
+                self.txt_epoch_grad,
             ]:
                 item.setVisible(True)
 

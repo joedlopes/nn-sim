@@ -71,18 +71,11 @@ def train_net(
                 beta1,
                 beta2,
                 epsilon,
-                batch_size
+                batch_size,
             )
         else:
             return train_net_adam(
-                net,
-                dataset,
-                learning_rate,
-                epochs,
-                loss_func,
-                beta1,
-                beta2,
-                epsilon
+                net, dataset, learning_rate, epochs, loss_func, beta1, beta2, epsilon
             )
     return None
 
@@ -183,8 +176,12 @@ def train_net_sgd_momentum(
 
         for layer in net.layers:
             # update velocities
-            layer.velocity_weights = momentum * layer.velocity_weights + learning_rate * layer.grad_weights
-            layer.velocity_bias = momentum * layer.velocity_bias + learning_rate * layer.grad_bias
+            layer.velocity_weights = (
+                momentum * layer.velocity_weights + learning_rate * layer.grad_weights
+            )
+            layer.velocity_bias = (
+                momentum * layer.velocity_bias + learning_rate * layer.grad_bias
+            )
 
             # update parameters
             layer.weights = layer.weights - layer.velocity_weights
@@ -231,8 +228,12 @@ def train_net_sgd_momentum_mini_batch(
             layer.grad_bias = layer.grad_bias / n
 
             # update velocities
-            layer.velocity_weights = momentum * layer.velocity_weights + learning_rate * layer.grad_weights
-            layer.velocity_bias = momentum * layer.velocity_bias + learning_rate * layer.grad_bias 
+            layer.velocity_weights = (
+                momentum * layer.velocity_weights + learning_rate * layer.grad_weights
+            )
+            layer.velocity_bias = (
+                momentum * layer.velocity_bias + learning_rate * layer.grad_bias
+            )
 
             # update parameters
             layer.weights = layer.weights - layer.velocity_weights
@@ -281,17 +282,21 @@ def train_net_adam(
             layer.m_bias = beta1 * layer.m_bias + (1 - beta1) * layer.grad_bias
 
             # Update second moment estimate
-            layer.v_weights = beta2 * layer.v_weights + (1 - beta2) * (layer.grad_weights ** 2)
-            layer.v_bias = beta2 * layer.v_bias + (1 - beta2) * (layer.grad_bias ** 2)
+            layer.v_weights = beta2 * layer.v_weights + (1 - beta2) * (
+                layer.grad_weights**2
+            )
+            layer.v_bias = beta2 * layer.v_bias + (1 - beta2) * (layer.grad_bias**2)
 
             # Compute bias-corrected first and second moment estimates
-            m_hat_weights = layer.m_weights / (1 - beta1 ** t)
-            m_hat_bias = layer.m_bias / (1 - beta1 ** t)
-            v_hat_weights = layer.v_weights / (1 - beta2 ** t)
-            v_hat_bias = layer.v_bias / (1 - beta2 ** t)
+            m_hat_weights = layer.m_weights / (1 - beta1**t)
+            m_hat_bias = layer.m_bias / (1 - beta1**t)
+            v_hat_weights = layer.v_weights / (1 - beta2**t)
+            v_hat_bias = layer.v_bias / (1 - beta2**t)
 
             # Update parameters
-            layer.weights -= learning_rate * m_hat_weights / (np.sqrt(v_hat_weights) + epsilon)
+            layer.weights -= (
+                learning_rate * m_hat_weights / (np.sqrt(v_hat_weights) + epsilon)
+            )
             layer.bias -= learning_rate * m_hat_bias / (np.sqrt(v_hat_bias) + epsilon)
 
     print("Train Loss: ", train_loss)
@@ -345,17 +350,21 @@ def train_net_adam_mini_batch(
             layer.m_bias = beta1 * layer.m_bias + (1 - beta1) * layer.grad_bias
 
             # Update second moment estimate
-            layer.v_weights = beta2 * layer.v_weights + (1 - beta2) * (layer.grad_weights ** 2)
-            layer.v_bias = beta2 * layer.v_bias + (1 - beta2) * (layer.grad_bias ** 2)
+            layer.v_weights = beta2 * layer.v_weights + (1 - beta2) * (
+                layer.grad_weights**2
+            )
+            layer.v_bias = beta2 * layer.v_bias + (1 - beta2) * (layer.grad_bias**2)
 
             # Compute bias-corrected first and second moment estimates
-            m_hat_weights = layer.m_weights / (1 - beta1 ** t)
-            m_hat_bias = layer.m_bias / (1 - beta1 ** t)
-            v_hat_weights = layer.v_weights / (1 - beta2 ** t)
-            v_hat_bias = layer.v_bias / (1 - beta2 ** t)
+            m_hat_weights = layer.m_weights / (1 - beta1**t)
+            m_hat_bias = layer.m_bias / (1 - beta1**t)
+            v_hat_weights = layer.v_weights / (1 - beta2**t)
+            v_hat_bias = layer.v_bias / (1 - beta2**t)
 
             # Update parameters
-            layer.weights -= learning_rate * m_hat_weights / (np.sqrt(v_hat_weights) + epsilon)
+            layer.weights -= (
+                learning_rate * m_hat_weights / (np.sqrt(v_hat_weights) + epsilon)
+            )
             layer.bias -= learning_rate * m_hat_bias / (np.sqrt(v_hat_bias) + epsilon)
 
     print("Train Loss: ", train_loss)
