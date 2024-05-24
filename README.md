@@ -9,3 +9,4 @@ python -m pip install pyside6 pyqtgraph pyopengl pydyantic opencv-python matplot
 python run.py
 ```
 
+![alt text](image.png)
