@@ -4,9 +4,8 @@ Neural Network Simulator and Visualization Tool written in Python for Educationa
 
 
 ```bash
-python -m pip install pyside6 pyqtgraph pyopengl pydyantic opencv-python matplotlib jupyterlab
+python -m pip install pyside6 pyqtgraph pyopengl pydyantic opencv-python matplotlib jupyterlab seaborn
+
+python run.py
 ```
 
-## TODO
-
-display gradients being computed
