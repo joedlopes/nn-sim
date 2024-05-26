@@ -10,8 +10,7 @@ import qtmodern.styles
 ctx = dc.ApplicationContext()
 app = dc.Application(ctx, sys.argv)
 qtmodern.styles.dark(app)
-dc.app_set_font(app, font_size=16)
-
+dc.app_set_font(app, font_size=14)
 
 mw = MainWindow(ctx)
 mw.show()

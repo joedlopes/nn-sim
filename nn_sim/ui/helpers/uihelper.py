@@ -1404,13 +1404,8 @@ def Alert(
     message: str,
     parent: Optional[QWidget] = None,
 ) -> None:
-    QMessageBox(
-        QMessageBox.Warning,
-        title,
-        message,
-        parent=parent,
-        flags=QMessageBox.NoButton,
-    ).exec_()
+    print(title, message, parent)
+    QMessageBox.warning(parent, title, message, QMessageBox.StandardButton.Ok)
 
 
 def Error(

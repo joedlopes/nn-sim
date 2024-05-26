@@ -7,7 +7,6 @@ from PySide6.QtWidgets import (
     QGraphicsView,
     QGraphicsLineItem,
     QGraphicsEllipseItem,
-    QGraphicsRectItem,
     QGraphicsPathItem,
 )
 
@@ -56,18 +55,17 @@ NEURON_PEN_WIDTH = 3
 NEURON_PEN_BRUSH = QBrush(QColor(240, 240, 240, 230))
 WEIGHT_WIDTH = 5
 
-BRUSH_NEURON = QBrush(QColor(0, 0, 200, 255))
+BRUSH_NEURON = QBrush(QColor(100, 100, 230, 255))
 BRUSH_BIAS = QBrush(QColor(200, 200, 0, 255))
 BRUSH_WEIGHT = QBrush(QColor(0, 255, 0, 255))
 
-BACKGROUND_BRUSH = QBrush(QColor(5, 5, 10, 255))
+BACKGROUND_BRUSH = QBrush(QColor(10, 10, 10, 255))
 
 COLORMAP = cv2.applyColorMap(
-    np.arange(256).astype(np.uint8),
+    (np.linspace(0.05, 1.0, 256).reshape(-1, 1) * 255).astype(np.uint8),
     cv2.COLORMAP_WINTER,
 ).reshape((-1, 3))
 
-COLORMAP = COLORMAP * np.linspace(0.3, 1.0, 256).reshape(-1, 1)
 COLORMAP = COLORMAP.astype(np.uint8)
 
 COLORMAP_NEURONS = cv2.applyColorMap(
@@ -103,9 +101,9 @@ class GraphViewWidget(QGraphicsView):
     def __init__(self) -> None:
         super().__init__()
 
-        # format = QSurfaceFormat.defaultFormat()
-        # format.setSamples(32)
-        # QSurfaceFormat.setDefaultFormat(format)
+        format = QSurfaceFormat.defaultFormat()
+        format.setSamples(32)
+        QSurfaceFormat.setDefaultFormat(format)
 
         self.setDragMode(QGraphicsView.NoDrag)
         self._isPanning = False
@@ -271,7 +269,11 @@ class GraphViewWidget(QGraphicsView):
                 line.weight_value = wb[idx]
                 v = (wb[idx] - v_min) / (v_max - v_min)
                 v = min(max(v, 0.0), 1.0)
-                vc = COLORMAP[int(v * 255)]
+
+                try:  # TODO cover all functions ranges
+                    vc = COLORMAP[int(v * 255)]
+                except:
+                    vc = COLORMAP[0]
                 pen.setBrush(QBrush(QColor(vc[2], vc[1], vc[0], 255)))
                 line.setPen(pen)
 
@@ -281,12 +283,20 @@ class GraphViewWidget(QGraphicsView):
         v_min: float = 0.0,
         v_max: float = 1.0,
     ):
-        for idx_layer, neuron_layers in enumerate(self._neurons):
+        for idx_layer, neuron_layer in enumerate(self._neurons):
             activations = neurons_data[idx_layer].flatten()
-            print(idx_layer, activations)
+            # print(idx_layer, activations)
 
-            for idx_neuron, neuron in enumerate(neuron_layers):
+            for idx_neuron, neuron in enumerate(neuron_layer):
                 v = (activations[idx_neuron] - v_min) / (v_max - v_min)
                 v = min(max(v, 0.0), 1.0)
-                vc = COLORMAP_NEURONS[int(v * 255)]
+                try:  # TODO cover all functions ranges
+                    vc = COLORMAP_NEURONS[int(v * 255)]
+                except:
+                    vc = COLORMAP_NEURONS[0]
                 neuron.setBrush(QBrush(QColor(vc[2], vc[1], vc[0], 255)))
+
+    def set_neuron_colors_default(self):
+        for idx_layer, neuron_layer in enumerate(self._neurons):
+            for idx_neuron, neuron in enumerate(neuron_layer):
+                neuron.setBrush(BRUSH_NEURON)
