@@ -1,0 +1,10 @@
+pyside6
+pyqtgraph
+pyopengl
+pydyantic
+tqdm
+opencv-python
+matplotlib
+jupyterlab
+seaborn
+qt-modern

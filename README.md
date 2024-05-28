@@ -12,7 +12,7 @@ Tested on Python 3.10 on Windows 10, Windows 11, MacOS M2, Ubuntu 22.
 
 Install required packages:
 ```bash
-python3 -m pip install pyside6 pyqtgraph pyopengl pydyantic tqdm opencv-python matplotlib jupyterlab seaborn qt-modern
+python3 -m pip install -r requirements.txt
 ```
 
 Run:
