@@ -76,7 +76,8 @@ def train_net_adam_grads(
 
             grads = layer.grad_weights
             if layer.bias_active:
-                grads = np.row_stack((grads, layer.bias))
+                BIAS_SCALER = 1.0
+                grads = np.row_stack((grads, layer.grad_bias * BIAS_SCALER))
             epoch_grads.append(np.abs(grads))
 
             # Update first moment estimate
