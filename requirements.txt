@@ -1,7 +1,7 @@
 pyside6
 pyqtgraph
 pyopengl
-pydyantic
+pydantic
 tqdm
 opencv-python
 matplotlib
